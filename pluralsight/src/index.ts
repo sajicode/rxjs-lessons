@@ -73,7 +73,7 @@ import { allBooks, allReaders } from './data';
 
 //#region Subscribing to Observables with observers
 
-const books$ = from(allBooks);
+// const books$ = from(allBooks);
 
 // * all functions - next, error, complete - are optional
 
@@ -87,10 +87,30 @@ const books$ = from(allBooks);
 // books$.subscribe(booksObserver);
 
 // * using callback function
-books$.subscribe(
-  (book: any) => console.log(`Title: ${book.title}`),
-  (err: Error) => console.log(`Error: ${err}`),
-  () => console.log('All Done!'),
-);
+// books$.subscribe(
+//   (book: any) => console.log(`Title: ${book.title}`),
+//   (err: Error) => console.log(`Error: ${err}`),
+//   () => console.log('All Done!'),
+// );
+
+// * multiple observers
+// * there can be multiple observers to an observable and
+// * each call to subscribe triggers an independent execution for a particular observer
+
+const currentTime$ = new Observable((subscriber) => {
+  const timeString = new Date().toLocaleTimeString();
+  subscriber.next(timeString);
+  subscriber.complete();
+});
+
+currentTime$.subscribe((currentTime) => console.log(`Observer 1: ${currentTime}`));
+
+setTimeout(() => {
+  currentTime$.subscribe((currentTime) => console.log(`Observer 2: ${currentTime}`));
+}, 1000);
+
+setTimeout(() => {
+  currentTime$.subscribe((currentTime) => console.log(`Observer 3: ${currentTime}`));
+}, 2000);
 
 //#endregion
