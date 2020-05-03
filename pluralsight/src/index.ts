@@ -1,4 +1,5 @@
 import { Observable, of, from, fromEvent, concat } from 'rxjs';
+import { ajax } from 'rxjs/ajax';
 import { allBooks, allReaders } from './data';
 
 // * an observable is not executed until an object subscribes to it
@@ -38,14 +39,30 @@ import { allBooks, allReaders } from './data';
 // concat(source1$, source2$).subscribe((values) => console.log(values));
 
 // * fromEvent - observable to handle events
+// const button: any = document.getElementById('readersButton');
+
+// fromEvent(button, 'click').subscribe((event) => {
+//   console.log(event);
+
+//   const readersDiv: any = document.getElementById('readers');
+
+//   for (const reader of allReaders) {
+//     readersDiv.innerHTML += reader.name + '<br>';
+//   }
+// });
+
+// * making ajax requests with rxjs
 const button: any = document.getElementById('readersButton');
 
 fromEvent(button, 'click').subscribe((event) => {
-  console.log(event);
+  ajax('https://api.github.com/users').subscribe((ajaxResponse) => {
+    console.log(ajaxResponse);
 
-  const readersDiv: any = document.getElementById('readers');
+    const users = ajaxResponse.response;
+    const readersDiv: any = document.getElementById('readers');
 
-  for (const reader of allReaders) {
-    readersDiv.innerHTML += reader.name + '<br>';
-  }
+    for (const user of users) {
+      readersDiv.innerHTML += user.login + '<br>';
+    }
+  });
 });
