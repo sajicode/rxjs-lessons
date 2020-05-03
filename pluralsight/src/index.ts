@@ -2,6 +2,9 @@ import { Observable, of, from, fromEvent, concat } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
 import { allBooks, allReaders } from './data';
 
+//#region Creating Observables...
+
+
 // * an observable is not executed until an object subscribes to it
 
 // * add $ sign to all variables that would store an observale
@@ -52,17 +55,42 @@ import { allBooks, allReaders } from './data';
 // });
 
 // * making ajax requests with rxjs
-const button: any = document.getElementById('readersButton');
+// const button: any = document.getElementById('readersButton');
 
-fromEvent(button, 'click').subscribe((event) => {
-  ajax('https://api.github.com/users').subscribe((ajaxResponse) => {
-    console.log(ajaxResponse);
+// fromEvent(button, 'click').subscribe((event) => {
+//   ajax('https://api.github.com/users').subscribe((ajaxResponse) => {
+//     console.log(ajaxResponse);
 
-    const users = ajaxResponse.response;
-    const readersDiv: any = document.getElementById('readers');
+//     const users = ajaxResponse.response;
+//     const readersDiv: any = document.getElementById('readers');
 
-    for (const user of users) {
-      readersDiv.innerHTML += user.login + '<br>';
-    }
-  });
-});
+//     for (const user of users) {
+//       readersDiv.innerHTML += user.login + '<br>';
+//     }
+//   });
+// });
+//#endregion
+
+//#region Subscribing to Observables with observers
+
+const books$ = from(allBooks);
+
+// * all functions - next, error, complete - are optional
+
+// * using object literal
+// const booksObserver = {
+//   next: (book: any) => console.log(`Title: ${book.title}`),
+//   error: (err: Error) => console.log(`Error: ${err}`),
+//   complete: () => console.log('All Done!'),
+// };
+
+// books$.subscribe(booksObserver);
+
+// * using callback function
+books$.subscribe(
+  (book: any) => console.log(`Title: ${book.title}`),
+  (err: Error) => console.log(`Error: ${err}`),
+  () => console.log('All Done!'),
+);
+
+//#endregion
