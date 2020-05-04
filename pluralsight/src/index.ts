@@ -1,6 +1,6 @@
-import { Observable, of, from, fromEvent, concat, interval } from 'rxjs';
+import { Observable, of, from, fromEvent, concat, interval, throwError } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
-import { mergeMap, filter, tap } from 'rxjs/operators';
+import { mergeMap, filter, tap, catchError } from 'rxjs/operators';
 import { allBooks, allReaders } from './data';
 
 //#region Creating Observables...
@@ -164,9 +164,21 @@ ajax('https://api.github.com/users')
     // * return users with id less than 20
     tap((oldUser: any) => console.log(`Username: ${oldUser.login}`)),
     // * pick specific items off the returned observable
+    // catchError((err) => of({ id: 73, login: 'saji-tron' })),
+    // * catch errors that might have been thrown by any of the observables returned from the operators above
+    // * let the subscriber handle the error as a normal observable value
+    // catchError((err, caught) => caught),
+    // * retry same code again
+    // catchError((err) => {
+    //   throw new Error(`Something bad happened ${err.message}`);
+    // }),
+    // * send error to error handler in subscriber
+    catchError((err) => throwError(err.message)),
+    // * send error to error handler with rxjs throw error. it ensures the error is wrapped in an observable
   )
-  .subscribe((finalValue) => {
-    console.log(finalValue);
-  });
+  .subscribe(
+    (finalValue) => console.log(`VALUE: ${finalValue.login}`),
+    (error: Error) => console.log(`ERROR: ${error}`),
+  );
 
 //#endregion
