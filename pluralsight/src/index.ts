@@ -1,6 +1,6 @@
 import { Observable, of, from, fromEvent, concat, interval, throwError, Subject } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
-import { mergeMap, flatMap, filter, tap, catchError, take, takeUntil, multicast, refCount, publish, share } from 'rxjs/operators';
+import { mergeMap, flatMap, filter, tap, catchError, take, takeUntil, multicast, refCount, publish, share, publishBehavior, publishLast, publishReplay } from 'rxjs/operators';
 import { allBooks, allReaders } from './data';
 
 //#region // * Creating Observables...
@@ -298,40 +298,47 @@ const source$: any = interval(1000).pipe(
   // multicast(new Subject()),
   // publish(),
   // * publish is like a wrapper around multicast
-  // refCount(),
-  share(),
+  // publishLast(),
+  // * returns the last value
+  // publishBehavior(33),
+  // * acts like a seed value when no value has been returned from the source observable
+  publishReplay(),
+  // * stores values and replays them for observers
+  refCount(),
+  // * starts executing as soon as there is at least one observer
+  // share(),
   // * allows late subscribers to a multicast trigger a new exectuion
 );
 
 // const subject$ = new Subject();
 // source$.subscribe(subject$);
 
-source$.subscribe(
-  (value: any) => console.log(`Observer 1: ${value}`),
-);
+// source$.subscribe(
+//   (value: any) => console.log(`Observer 1: ${value}`),
+// );
 
-setTimeout(() => {
-  source$.subscribe(
-    (value: any) => console.log(`Observer 2: ${value}`),
-  );
-}, 1000);
+// setTimeout(() => {
+//   source$.subscribe(
+//     (value: any) => console.log(`Observer 2: ${value}`),
+//   );
+// }, 1000);
 
-setTimeout(() => {
-  source$.subscribe(
-    (value: any) => console.log(`Observer 3: ${value}`),
-  );
-}, 2000);
+// setTimeout(() => {
+//   source$.subscribe(
+//     (value: any) => console.log(`Observer 3: ${value}`),
+//   );
+// }, 2000);
 
-setTimeout(() => {
-  source$.subscribe(
-    (value: any) => console.log(`Observer 4: ${value}`),
-    null,
-    () => console.log('Observer 4 complete'),
-  );
-}, 4500);
+// setTimeout(() => {
+//   source$.subscribe(
+//     (value: any) => console.log(`Observer 4: ${value}`),
+//     null,
+//     () => console.log('Observer 4 complete'),
+//   );
+// }, 4500);
 
 // * source$ does not start executing until connect is called,
-// * except we add refCount in the pipe function
+// * except we add refCount/ share in the pipe function
 // source$.connect();
 
 //#endregion
