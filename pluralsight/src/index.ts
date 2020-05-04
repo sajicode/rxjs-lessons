@@ -1,5 +1,6 @@
 import { Observable, of, from, fromEvent, concat, interval } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
+import { mergeMap, filter, tap } from 'rxjs/operators';
 import { allBooks, allReaders } from './data';
 
 //#region Creating Observables...
@@ -114,40 +115,58 @@ import { allBooks, allReaders } from './data';
 // }, 2000);
 
 // * cancelling observable execution
-const timesDiv: any = document.getElementById('times');
-const button: any = document.getElementById('timerButton');
+// const timesDiv: any = document.getElementById('times');
+// const button: any = document.getElementById('timerButton');
 
 // * interval returns an observable that produces a stream of integers at every specified time
 // const timer$ = interval(1000);
-const timer$ = new Observable((subscriber) => {
-  let i = 0;
-  const intervalID = setInterval(() => {
-    subscriber.next(i++);
-  }, 1000);
+// const timer$ = new Observable((subscriber) => {
+//   let i = 0;
+//   const intervalID = setInterval(() => {
+//     subscriber.next(i++);
+//   }, 1000);
 
-  return () => {
-    console.log('Clean Up code running');
-    clearInterval(intervalID);
-  }
-});
+//   return () => {
+//     console.log('Clean Up code running');
+//     clearInterval(intervalID);
+//   }
+// });
 
-const timerSubscription = timer$.subscribe(
-  (value) => timesDiv.innerHTML += `${new Date().toLocaleTimeString()} (${value}) <br>`,
-  null,
-  () => console.log('All done here!'),
-);
+// const timerSubscription = timer$.subscribe(
+//   (value) => timesDiv.innerHTML += `${new Date().toLocaleTimeString()} (${value}) <br>`,
+//   null,
+//   () => console.log('All done here!'),
+// );
 
-// * chain subscriptions so that an unscubscribe click on one subscriber cancels both
-const timerConsoleSubscription = timer$.subscribe(
-  (value) => console.log(`${new Date().toLocaleTimeString()} (${value})`),
-);
+// // * chain subscriptions so that an unscubscribe click on one subscriber cancels both
+// const timerConsoleSubscription = timer$.subscribe(
+//   (value) => console.log(`${new Date().toLocaleTimeString()} (${value})`),
+// );
 
-timerSubscription.add(timerConsoleSubscription);
+// timerSubscription.add(timerConsoleSubscription);
 
 // * remove an added subscription
 // timerSubscription.remove(timerConsoleSubscription);
 
-fromEvent(button, 'click').subscribe((event) => timerSubscription.unsubscribe());
+// fromEvent(button, 'click').subscribe((event) => timerSubscription.unsubscribe());
 
 // * when an observable is cancelled by unsubscribe, there would be no complete function to be called
+//#endregion
+
+//#region Using Operators
+
+// * merge map operator maps one value to another & then flattens the result
+ajax('https://api.github.com/users')
+  .pipe(
+    mergeMap((ajaxResponse) => ajaxResponse.response),
+    // * each item in response is logged individually
+    filter((user: any) => user.id < 20),
+    // * return users with id less than 20
+    tap((oldUser: any) => console.log(`Username: ${oldUser.login}`)),
+    // * pick specific items off the returned observable
+  )
+  .subscribe((finalValue) => {
+    console.log(finalValue);
+  });
+
 //#endregion
