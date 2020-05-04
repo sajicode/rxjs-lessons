@@ -218,34 +218,49 @@ import { allBooks, allReaders } from './data';
 
 // * mergeMap == flatMap
 
-function grabAndLogUsersLogin(id: number, log: boolean) {
-  return (source$: any) => {
-    return new Observable((subscriber) => {
-      // * returning the subscription allows us to unsubscribe
-      return source$.subscribe(
-        (user: any) => {
-          if (user.id < id) {
-            subscriber.next(user);
-            if (log) {
-              console.log(`OG User: ${user.login}`);
-            }
-          }
-        },
-        (err: Error) => subscriber.error(err),
-        () => subscriber.complete(),
-      );
-    });
-  };
-}
+// function grabAndLogUsersLogin(id: number, log: boolean) {
+//   return (source$: any) => {
+//     return new Observable((subscriber) => {
+//       // * returning the subscription allows us to unsubscribe
+//       return source$.subscribe(
+//         (user: any) => {
+//           if (user.id < id) {
+//             subscriber.next(user);
+//             if (log) {
+//               console.log(`OG User: ${user.login}`);
+//             }
+//           }
+//         },
+//         (err: Error) => subscriber.error(err),
+//         () => subscriber.complete(),
+//       );
+//     });
+//   };
+// }
 
-ajax('https://api.github.com/users')
-  .pipe(
-    mergeMap((ajaxResponse) => ajaxResponse.response),
-    grabAndLogUsersLogin(7, false),
-  )
-  .subscribe(
-    (finalValue: any) => console.log(`VALUE: ${finalValue.login}`),
-    (error: Error) => console.log(`ERROR: ${error}`),
-  );
+// function grabOGUsers(id: number) {
+//   return filter((user: any) => user.id < id);
+// }
+
+// function grabAndLogOGUsersWithPipe(id: number, log: boolean) {
+//   return (source$: any) => source$.pipe(
+//     filter((user: any) => user.id < id),
+//     tap((oGUser: any) => log ? console.log(`Username: ${oGUser.login}`) : null),
+//   );
+// }
+
+// ajax('https://api.github.com/users')
+//   .pipe(
+//     flatMap((ajaxResponse) => ajaxResponse.response),
+//     // filter((user: any) => user.id < 20),
+//     // tap((oldUser: any) => console.log(`Username: ${oldUser.login}`)),
+//     // grabAndLogUsersLogin(7, false),
+//     // grabOGUsers(5),
+//     grabAndLogOGUsersWithPipe(5, false),
+//   )
+//   .subscribe(
+//     (finalValue: any) => console.log(`VALUE: ${finalValue.login}`),
+//     (error: Error) => console.log(`ERROR: ${error}`),
+//   );
 
 //#endregion
