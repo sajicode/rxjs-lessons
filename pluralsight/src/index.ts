@@ -1,6 +1,6 @@
 import { Observable, of, from, fromEvent, concat, interval, throwError } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
-import { mergeMap, filter, tap, catchError } from 'rxjs/operators';
+import { mergeMap, filter, tap, catchError, take, takeUntil } from 'rxjs/operators';
 import { allBooks, allReaders } from './data';
 
 //#region Creating Observables...
@@ -156,29 +156,60 @@ import { allBooks, allReaders } from './data';
 //#region Using Operators
 
 // * merge map operator maps one value to another & then flattens the result
-ajax('https://api.github.com/users')
+// ajax('https://api.github.com/users')
+// .pipe(
+// mergeMap((ajaxResponse) => ajaxResponse.response),
+// * each item in response is logged individually
+// filter((user: any) => user.id < 20),
+// * return users with id less than 20
+// tap((oldUser: any) => console.log(`Username: ${oldUser.login}`)),
+// * pick specific items off the returned observable
+// catchError((err) => of({ id: 73, login: 'saji-tron' })),
+// * catch errors that might have been thrown by any of the observables returned from the operators above
+// * let the subscriber handle the error as a normal observable value
+// catchError((err, caught) => caught),
+// * retry same code again
+// catchError((err) => {
+//   throw new Error(`Something bad happened ${err.message}`);
+// }),
+// * send error to error handler in subscriber
+// catchError((err) => throwError(err.message)),
+// * send error to error handler with rxjs throw error. it ensures the error is wrapped in an observable
+// )
+// .subscribe(
+//   (finalValue) => console.log(`VALUE: ${finalValue.login}`),
+//   (error: Error) => console.log(`ERROR: ${error}`),
+// );
+
+// * Controlling the number of values produces
+const timesDiv: any = document.getElementById('times');
+const button: any = document.getElementById('timerButton');
+
+const timer$ = new Observable((subscriber) => {
+  let i = 0;
+  const intervalID = setInterval(() => {
+    subscriber.next(i++);
+  }, 1000);
+
+  return () => {
+    console.log('Clean Up code running');
+    clearInterval(intervalID);
+  }
+});
+
+const cancelTimer$ = fromEvent(button, 'click');
+
+timer$
   .pipe(
-    mergeMap((ajaxResponse) => ajaxResponse.response),
-    // * each item in response is logged individually
-    filter((user: any) => user.id < 20),
-    // * return users with id less than 20
-    tap((oldUser: any) => console.log(`Username: ${oldUser.login}`)),
-    // * pick specific items off the returned observable
-    // catchError((err) => of({ id: 73, login: 'saji-tron' })),
-    // * catch errors that might have been thrown by any of the observables returned from the operators above
-    // * let the subscriber handle the error as a normal observable value
-    // catchError((err, caught) => caught),
-    // * retry same code again
-    // catchError((err) => {
-    //   throw new Error(`Something bad happened ${err.message}`);
-    // }),
-    // * send error to error handler in subscriber
-    catchError((err) => throwError(err.message)),
-    // * send error to error handler with rxjs throw error. it ensures the error is wrapped in an observable
+    // take(5),
+    // * returns only a specified number of values
+    takeUntil(cancelTimer$),
+    // * returns values until the cancelTimer event is triggered
   )
   .subscribe(
-    (finalValue) => console.log(`VALUE: ${finalValue.login}`),
-    (error: Error) => console.log(`ERROR: ${error}`),
+    (value) => timesDiv.innerHTML += `${new Date().toLocaleTimeString()} (${value}) <br>`,
+    null,
+    () => console.log('All done here!'),
   );
 
 //#endregion
