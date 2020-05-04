@@ -1,4 +1,4 @@
-import { Observable, of, from, fromEvent, concat, interval, throwError } from 'rxjs';
+import { Observable, of, from, fromEvent, concat, interval, throwError, Subject } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
 import { mergeMap, flatMap, filter, tap, catchError, take, takeUntil } from 'rxjs/operators';
 import { allBooks, allReaders } from './data';
@@ -262,5 +262,31 @@ import { allBooks, allReaders } from './data';
 //     (finalValue: any) => console.log(`VALUE: ${finalValue.login}`),
 //     (error: Error) => console.log(`ERROR: ${error}`),
 //   );
+
+//#endregion
+
+//#region  // * Using Subjects & Multicasted Observables
+
+const subject$ = new Subject();
+
+subject$.subscribe(
+  (value) => console.log(`Observer 1: ${value}`),
+);
+
+subject$.subscribe(
+  (value) => console.log(`Observer 2: ${value}`),
+);
+
+// * subjects produce values when theor next method is called
+// * method 1
+subject$.next('Hello');
+
+// * method 2
+const source$ = new Observable((subscriber) => {
+  subscriber.next('Greetings Earthlings!');
+});
+
+// * we can perform the action below since a subject is an observer
+source$.subscribe(subject$);
 
 //#endregion
