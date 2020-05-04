@@ -267,26 +267,52 @@ import { allBooks, allReaders } from './data';
 
 //#region  // * Using Subjects & Multicasted Observables
 
+// const subject$ = new Subject();
+
+// subject$.subscribe(
+// (value) => console.log(`Observer 1: ${value}`),
+// );
+
+// subject$.subscribe(
+// (value) => console.log(`Observer 2: ${value}`),
+// );
+
+// * subjects produce values when theor next method is called
+// * method 1
+// subject$.next('Hello');
+
+// * method 2
+// const source$ = new Observable((subscriber) => {
+// subscriber.next('Greetings Earthlings!');
+// });
+
+// * we can perform the action below since a subject is an observer
+// source$.subscribe(subject$);
+
+// * Using a Subject to convert an observable from cold to hot
+// * this basically means that there would be no new execution for every subscription to an observer
+// * if a subscriber is late to the party, he picks up where the party is
+const source$ = interval(1000).pipe(
+  take(4),
+);
+
 const subject$ = new Subject();
+source$.subscribe(subject$);
 
 subject$.subscribe(
   (value) => console.log(`Observer 1: ${value}`),
 );
 
-subject$.subscribe(
-  (value) => console.log(`Observer 2: ${value}`),
-);
+setTimeout(() => {
+  subject$.subscribe(
+    (value) => console.log(`Observer 2: ${value}`),
+  );
+}, 1000);
 
-// * subjects produce values when theor next method is called
-// * method 1
-subject$.next('Hello');
-
-// * method 2
-const source$ = new Observable((subscriber) => {
-  subscriber.next('Greetings Earthlings!');
-});
-
-// * we can perform the action below since a subject is an observer
-source$.subscribe(subject$);
+setTimeout(() => {
+  subject$.subscribe(
+    (value) => console.log(`Observer 3: ${value}`),
+  );
+}, 2000);
 
 //#endregion
