@@ -1,6 +1,6 @@
 import { Observable, of, from, fromEvent, concat, interval, throwError, Subject } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
-import { mergeMap, flatMap, filter, tap, catchError, take, takeUntil } from 'rxjs/operators';
+import { mergeMap, flatMap, filter, tap, catchError, take, takeUntil, multicast, refCount, publish, share } from 'rxjs/operators';
 import { allBooks, allReaders } from './data';
 
 //#region // * Creating Observables...
@@ -292,27 +292,46 @@ import { allBooks, allReaders } from './data';
 // * Using a Subject to convert an observable from cold to hot
 // * this basically means that there would be no new execution for every subscription to an observer
 // * if a subscriber is late to the party, he picks up where the party is
-const source$ = interval(1000).pipe(
+// * this way, each observer receives a value at the same time
+const source$: any = interval(1000).pipe(
   take(4),
+  // multicast(new Subject()),
+  // publish(),
+  // * publish is like a wrapper around multicast
+  // refCount(),
+  share(),
+  // * allows late subscribers to a multicast trigger a new exectuion
 );
 
-const subject$ = new Subject();
-source$.subscribe(subject$);
+// const subject$ = new Subject();
+// source$.subscribe(subject$);
 
-subject$.subscribe(
-  (value) => console.log(`Observer 1: ${value}`),
+source$.subscribe(
+  (value: any) => console.log(`Observer 1: ${value}`),
 );
 
 setTimeout(() => {
-  subject$.subscribe(
-    (value) => console.log(`Observer 2: ${value}`),
+  source$.subscribe(
+    (value: any) => console.log(`Observer 2: ${value}`),
   );
 }, 1000);
 
 setTimeout(() => {
-  subject$.subscribe(
-    (value) => console.log(`Observer 3: ${value}`),
+  source$.subscribe(
+    (value: any) => console.log(`Observer 3: ${value}`),
   );
 }, 2000);
+
+setTimeout(() => {
+  source$.subscribe(
+    (value: any) => console.log(`Observer 4: ${value}`),
+    null,
+    () => console.log('Observer 4 complete'),
+  );
+}, 4500);
+
+// * source$ does not start executing until connect is called,
+// * except we add refCount in the pipe function
+// source$.connect();
 
 //#endregion
