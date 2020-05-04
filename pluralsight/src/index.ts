@@ -1,9 +1,9 @@
 import { Observable, of, from, fromEvent, concat, interval, throwError } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
-import { mergeMap, filter, tap, catchError, take, takeUntil } from 'rxjs/operators';
+import { mergeMap, flatMap, filter, tap, catchError, take, takeUntil } from 'rxjs/operators';
 import { allBooks, allReaders } from './data';
 
-//#region Creating Observables...
+//#region // * Creating Observables...
 
 
 // * an observable is not executed until an object subscribes to it
@@ -72,7 +72,7 @@ import { allBooks, allReaders } from './data';
 // });
 //#endregion
 
-//#region Subscribing to Observables with observers
+//#region // * Subscribing to Observables with observers
 
 // const books$ = from(allBooks);
 
@@ -153,7 +153,7 @@ import { allBooks, allReaders } from './data';
 // * when an observable is cancelled by unsubscribe, there would be no complete function to be called
 //#endregion
 
-//#region Using Operators
+//#region // * Using Operators
 
 // * merge map operator maps one value to another & then flattens the result
 // ajax('https://api.github.com/users')
@@ -182,34 +182,70 @@ import { allBooks, allReaders } from './data';
 // );
 
 // * Controlling the number of values produces
-const timesDiv: any = document.getElementById('times');
-const button: any = document.getElementById('timerButton');
+// const timesDiv: any = document.getElementById('times');
+// const button: any = document.getElementById('timerButton');
 
-const timer$ = new Observable((subscriber) => {
-  let i = 0;
-  const intervalID = setInterval(() => {
-    subscriber.next(i++);
-  }, 1000);
+// const timer$ = new Observable((subscriber) => {
+//   let i = 0;
+//   const intervalID = setInterval(() => {
+//     subscriber.next(i++);
+//   }, 1000);
 
-  return () => {
-    console.log('Clean Up code running');
-    clearInterval(intervalID);
-  }
-});
+//   return () => {
+//     console.log('Clean Up code running');
+//     clearInterval(intervalID);
+//   }
+// });
 
-const cancelTimer$ = fromEvent(button, 'click');
+// const cancelTimer$ = fromEvent(button, 'click');
 
-timer$
+// timer$
+//   .pipe(
+//     // take(5),
+//     // * returns only a specified number of values
+//     takeUntil(cancelTimer$),
+//     // * returns values until the cancelTimer event is triggered
+//   )
+//   .subscribe(
+//     (value) => timesDiv.innerHTML += `${new Date().toLocaleTimeString()} (${value}) <br>`,
+//     null,
+//     () => console.log('All done here!'),
+//   );
+
+//#endregion
+
+//#region // * Creating our own operator
+
+// * mergeMap == flatMap
+
+function grabAndLogUsersLogin(id: number, log: boolean) {
+  return (source$: any) => {
+    return new Observable((subscriber) => {
+      // * returning the subscription allows us to unsubscribe
+      return source$.subscribe(
+        (user: any) => {
+          if (user.id < id) {
+            subscriber.next(user);
+            if (log) {
+              console.log(`OG User: ${user.login}`);
+            }
+          }
+        },
+        (err: Error) => subscriber.error(err),
+        () => subscriber.complete(),
+      );
+    });
+  };
+}
+
+ajax('https://api.github.com/users')
   .pipe(
-    // take(5),
-    // * returns only a specified number of values
-    takeUntil(cancelTimer$),
-    // * returns values until the cancelTimer event is triggered
+    mergeMap((ajaxResponse) => ajaxResponse.response),
+    grabAndLogUsersLogin(7, false),
   )
   .subscribe(
-    (value) => timesDiv.innerHTML += `${new Date().toLocaleTimeString()} (${value}) <br>`,
-    null,
-    () => console.log('All done here!'),
+    (finalValue: any) => console.log(`VALUE: ${finalValue.login}`),
+    (error: Error) => console.log(`ERROR: ${error}`),
   );
 
 //#endregion
